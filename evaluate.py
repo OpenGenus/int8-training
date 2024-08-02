@@ -14,7 +14,7 @@ def evaluate_model(interpreter, x_test, y_test):
     correct_predictions = 0
 
     for i in range(len(x_test)):
-        input_data = np.expand_dims(x_test[i], axis=0).astype(np.float32)
+        input_data = np.expand_dims(x_test[i], axis=0).astype(np.float32)  # Keep input data as FP32
         interpreter.set_tensor(input_details[0]['index'], input_data)
         interpreter.invoke()
         output_data = interpreter.get_tensor(output_details[0]['index'])
@@ -24,9 +24,12 @@ def evaluate_model(interpreter, x_test, y_test):
     accuracy = correct_predictions / len(x_test)
     print(f'INT8 Model accuracy: {accuracy}')
 
-x_test = np.random.rand(100, 28, 28, 1)  
-y_test = np.random.randint(0, 10, 100)    
+if __name__ == "__main__":
+    # Load the test dataset (assuming it was prepared in train_quantize.py)
+    mnist = tf.keras.datasets.mnist
+    (_, _), (x_test, y_test) = mnist.load_data()
+    x_test = x_test / 255.0
+    x_test = x_test[..., tf.newaxis]
 
-# Call the function with the test data
-evaluate_model(interpreter, x_test, y_test)
-
+    # Call the evaluation function with the test data
+    evaluate_model(interpreter, x_test, y_test)
